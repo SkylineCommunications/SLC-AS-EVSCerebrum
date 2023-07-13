@@ -51,24 +51,207 @@ DATE		VERSION		AUTHOR			COMMENTS
 
 namespace Next_live_On_Multiviewer_1
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Globalization;
-	using System.Text;
-	using Skyline.DataMiner.Automation;
-	
-	/// <summary>
-	/// Represents a DataMiner Automation script.
-	/// </summary>
-	public class Script
-	{
-		/// <summary>
-		/// The script entry point.
-		/// </summary>
-		/// <param name="engine">Link with SLAutomation process.</param>
-		public void Run(IEngine engine)
-		{
-	
-		}
-	}
+    using System;
+    using System.Text.RegularExpressions;
+
+    using Skyline.DataMiner.Automation;
+    using Skyline.DataMiner.CommunityLibrary.Automation.Extensions;
+    using Skyline.DataMiner.Core.DataMinerSystem.Automation;
+    using Skyline.DataMiner.Core.DataMinerSystem.Common;
+    using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum;
+    using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum.IAC.Common.Routes.Messages;
+
+    /// <summary>
+    /// Represents a DataMiner Automation script.
+    /// </summary>
+    public static class Script
+    {
+        private const string CerebrumElementName = "{ Active BC SAW Server }";
+
+        private const string DefaultOptionalLevel = "[Optional]";
+
+        /// <summary>
+        ///     The Script entry point.
+        /// </summary>
+        /// <param name="engine">Link with SLAutomation process.</param>
+        public static void Run(Engine engine)
+        {
+            try
+            {
+                // Retrieve data
+                var nextChannelEvents = GetNextChannelEvents(engine);
+                var cerebrumSAW = engine.GetDms().GetElement(CerebrumElementName);
+
+                var labels = GetLabels(nextChannelEvents.ChannelName) ?? throw new NotSupportedException($"Channel '{nextChannelEvents.ChannelName}' not supported.");
+
+                SetNextLiveOnMultiviewer(engine, cerebrumSAW, nextChannelEvents, labels);
+            }
+            catch (Exception e)
+            {
+                engine.ExitFail("ERROR|Exception thrown:" + Environment.NewLine + e);
+            }
+        }
+
+        private static void CreateRoute(Engine engine, IDmsElement element, string source, string destination)
+        {
+            string sourceName = source == "-" ? "NC" : source;
+
+            var createRoute = new CreateRoute
+            {
+                DestLevelName = DefaultOptionalLevel,
+                DeviceInstance = "0.0.0.0-Router",
+                DestName = destination,
+                SourceLevelName = DefaultOptionalLevel,
+                SourceName = sourceName,
+                UseTags = true,
+            };
+
+            var evsClient = new EvsCerebrumEngineClient(engine, element.DmsElementId);
+            evsClient.CreateRouteAsync(createRoute);
+        }
+
+        private static Labels GetLabels(string channelName)
+        {
+            var labels = new Labels();
+
+            switch (channelName)
+            {
+                case "ORF1":
+                    labels.MainN = "ORF1 MV NL";
+                    labels.MainN1 = "ORF1 MV NL+1";
+                    labels.MainN2 = "ORF1 MV NL+2";
+                    labels.BackupN = String.Empty;
+                    labels.BackupN1 = String.Empty;
+                    labels.BackupN2 = String.Empty;
+
+                    break;
+                case "ORF2":
+                    labels.MainN = "ORF2 MV NL";
+                    labels.MainN1 = "ORF2 MV NL+1";
+                    labels.MainN2 = "ORF2 MV NL+2";
+                    labels.BackupN = String.Empty;
+                    labels.BackupN1 = String.Empty;
+                    labels.BackupN2 = String.Empty;
+
+                    break;
+                case "ORF3":
+                    labels.MainN = "ORF3 MV NL";
+                    labels.MainN1 = "ORF3 MV NL+1";
+                    labels.MainN2 = "ORF3 MV NL+2";
+                    labels.BackupN = String.Empty;
+                    labels.BackupN1 = String.Empty;
+                    labels.BackupN2 = String.Empty;
+
+                    break;
+                case "OSP":
+                    labels.MainN = "OSP MV NL";
+                    labels.MainN1 = "OSP MV NL+1";
+                    labels.MainN2 = "OSP MV NL+2";
+                    labels.BackupN = String.Empty;
+                    labels.BackupN1 = String.Empty;
+                    labels.BackupN2 = String.Empty;
+
+                    break;
+
+                case "ORF_2nd1":
+                    labels.MainN = "2nd1 MV NL";
+                    labels.BackupN = String.Empty;
+
+                    break;
+                case "ORF_2nd2":
+                    labels.MainN = "2nd2 MV NL";
+                    labels.BackupN = String.Empty;
+
+                    break;
+                case "ORF_2nd3":
+                    labels.MainN = "2nd3 MV NL";
+                    labels.BackupN = String.Empty;
+
+                    break;
+                case "ORF_2nd4":
+                    labels.MainN = "2nd4 MV NL";
+                    labels.BackupN = String.Empty;
+
+                    break;
+                case "ORF_2nd5":
+                    labels.MainN = "2nd5 MV NL";
+                    labels.BackupN = String.Empty;
+
+                    break;
+                case "ORF2E":
+                    labels.MainN = "ORF2E MV NL";
+                    labels.BackupN = String.Empty;
+                    break;
+                case "TuS":
+                    labels.MainN = "TuS MV NL";
+                    labels.MainN1 = "TuS MV NL+1";
+                    labels.MainN2 = "TuS MV NL+2";
+                    labels.BackupN = String.Empty;
+                    labels.BackupN1 = String.Empty;
+                    labels.BackupN2 = String.Empty;
+
+                    break;
+                default:
+                    return null;
+            }
+
+            return labels;
+        }
+
+        private static NextChannelEvents GetNextChannelEvents(Engine engine)
+        {
+            // information event content: 'ORF1|SR001|SR002|SR003'
+            var pattern = @"([^\|]+)\^([^\|]+)\^([^\|]+)\^([^\|]+)";
+            var correlationAlarmInfo = engine.GetCorrelationAlarmInfo();
+            var match = Regex.Match(correlationAlarmInfo.AlarmValue, pattern);
+
+            if (!match.Success)
+            {
+                throw new FormatException($"Input with value'{correlationAlarmInfo.AlarmValue}' has invalid format.");
+            }
+
+            var nextChannelEvents = new NextChannelEvents
+            {
+                ChannelName = match.Groups[1].Value,
+                Source_N = match.Groups[2].Value,
+                Source_N1 = match.Groups[3].Value,
+                Source_N2 = match.Groups[4].Value,
+            };
+
+            return nextChannelEvents;
+        }
+
+        private static void SetNextLiveOnMultiviewer(Engine engine, IDmsElement element, NextChannelEvents nextChannelEvents, Labels labels)
+        {
+            CreateRoute(engine, element, nextChannelEvents.Source_N, labels.MainN);
+            CreateRoute(engine, element, nextChannelEvents.Source_N1, labels.MainN1);
+            CreateRoute(engine, element, nextChannelEvents.Source_N2, labels.MainN2);
+        }
+    }
+
+    public class NextChannelEvents
+    {
+        public string ChannelName { get; set; }
+
+        public string Source_N { get; set; }
+
+        public string Source_N1 { get; set; }
+
+        public string Source_N2 { get; set; }
+    }
+
+    public class Labels
+    {
+        public string BackupN { get; set; }
+
+        public string BackupN1 { get; set; }
+
+        public string BackupN2 { get; set; }
+
+        public string MainN { get; set; }
+
+        public string MainN1 { get; set; }
+
+        public string MainN2 { get; set; }
+    }
 }
