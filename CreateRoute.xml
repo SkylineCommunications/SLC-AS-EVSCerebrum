@@ -23,6 +23,12 @@
 		<ScriptParameter id="4" type="string" values="">
 			<Description>Destination</Description>
 		</ScriptParameter>
+		<ScriptParameter id="5" type="string" values="">
+			<Description>Source Level</Description>
+		</ScriptParameter>
+		<ScriptParameter id="6" type="string" values="">
+			<Description>Destination Level</Description>
+		</ScriptParameter>
 	</Parameters>
 
 	<Script>

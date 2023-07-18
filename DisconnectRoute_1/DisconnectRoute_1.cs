@@ -82,10 +82,13 @@ namespace DisconnectRoute_1
 
             // Getting element
             var dms = engine.GetDms();
-            var elementEVSCerebrum = dms.GetElements().Where(x => x.Protocol.Name == "EVS Cerebrum" && x.Protocol.Version == "Production").FirstOrDefault();
+            var elementEVSCerebrum = dms.GetElements().First(e => e.Protocol.Name == "EVS Cerebrum" && e.Protocol.Version == "Production");
 
             // Getting row for provided routeId
-            Object[] rowData = elementEVSCerebrum.GetTable(RoutesTableId).QueryData(new[] { new ColumnFilter() { Pid = DestinationNamePid, Value = destination, ComparisonOperator = ComparisonOperator.Equal } }).First(); // todo, check with Joey if we can get here non-existing value in destination parameter or not
+            Object[] rowData = elementEVSCerebrum
+                .GetTable(RoutesTableId)
+                .QueryData(new[] { new ColumnFilter { Pid = DestinationNamePid, Value = destination, ComparisonOperator = ComparisonOperator.Equal } })
+                .First();
             var device = Convert.ToString(rowData[DeviceNameIndex]);
 
             // Deleting Route

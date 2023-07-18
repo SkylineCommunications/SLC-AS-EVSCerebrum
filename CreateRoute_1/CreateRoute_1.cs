@@ -51,8 +51,9 @@ dd/mm/2023	1.0.0.1		RRA, Skyline	Initial version
 
 namespace CreateRoute_1
 {
+    using System;
     using System.Linq;
-
+    using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Common;
@@ -73,26 +74,42 @@ namespace CreateRoute_1
         public void Run(Engine engine)
         {
             // Getting script parameters
-            var device = engine.GetScriptParam("Device").Value;
-            var source = engine.GetScriptParam("Source").Value;
-            var destination = engine.GetScriptParam("Destination").Value;
+            var device = GetFirstValueFromInputParameter(engine, "Device");
+            var source = GetFirstValueFromInputParameter(engine, "Source");
+            var sourceLevel = GetFirstValueFromInputParameter(engine, "Source Level");
+            var destination = GetFirstValueFromInputParameter(engine, "Destination");
+            var destinationLevel = GetFirstValueFromInputParameter(engine, "Destination Level");
 
             // Getting element
             var dms = engine.GetDms();
-            var elementEVSCerebrum = dms.GetElements().Where(x => x.Protocol.Name == "EVS Cerebrum" && x.Protocol.Version == "Production").FirstOrDefault();
+            var elementEVSCerebrum = dms.GetElements().First(e => e.Protocol.Name == "EVS Cerebrum" && e.Protocol.Version == "Production");
 
             // Creating Route
-            CreateRoute(engine, elementEVSCerebrum, device, source, destination);
+            CreateRoute(engine, elementEVSCerebrum, device, source, sourceLevel, destination, destinationLevel);
         }
 
-        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string destination)
+        private static string GetFirstValueFromInputParameter(IEngine engine, string parameterName)
+        {
+            try
+            {
+                var input = JsonConvert.DeserializeObject<string[]>(engine.GetScriptParam(parameterName).Value);
+                return input.FirstOrDefault();
+            }
+            catch (Exception e)
+            {
+                engine.Log($"Exception deserializing input parameter {parameterName}: {e}");
+                return null;
+            }
+        }
+
+        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string sourceLevel, string destination, string destinationLevel)
         {
             var createRoute = new CreateRoute
             {
-                DestLevelName = DefaultOptionalLevel,
+                DestLevelName = destinationLevel ?? DefaultOptionalLevel,
                 DeviceInstance = device,
                 DestName = destination,
-                SourceLevelName = DefaultOptionalLevel,
+                SourceLevelName = sourceLevel ?? DefaultOptionalLevel,
                 SourceName = source,
                 UseTags = true,
             };

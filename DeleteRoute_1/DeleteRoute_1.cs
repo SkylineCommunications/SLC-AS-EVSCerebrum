@@ -70,19 +70,18 @@ namespace DeleteRoute_1
         private const int DestinationNameIndex = 4;
         private const int RoutesTableId = 3100;
 
-
         /// <summary>
         /// The script entry point.
         /// </summary>
         /// <param name="engine">Link with SLAutomation process.</param>
-		public void Run(Engine engine)
+        public void Run(Engine engine)
         {
             // Getting script parameters
             string routeId = engine.GetScriptParam("RouteId").Value;
 
             // Getting element
             var dms = engine.GetDms();
-            var elementEVSCerebrum = dms.GetElements().Where(x => x.Protocol.Name == "EVS Cerebrum" && x.Protocol.Version == "Production").FirstOrDefault();
+            var elementEVSCerebrum = dms.GetElements().First(e => e.Protocol.Name == "EVS Cerebrum" && e.Protocol.Version == "Production");
 
             // Getting row for provided routeId
             object[] rowData = elementEVSCerebrum.GetTable(RoutesTableId).GetRow(routeId);
