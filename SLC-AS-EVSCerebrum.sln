@@ -55,6 +55,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{248C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeleteRoute_1", "DeleteRoute_1\DeleteRoute_1.csproj", "{BBA6F740-037C-4D6B-8A97-632F050BAD81}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DisconnectRoute", "DisconnectRoute", "{ABA92269-9536-413B-9031-264FEA3164C7}"
+	ProjectSection(SolutionItems) = preProject
+		DisconnectRoute.xml = DisconnectRoute.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{0E352065-E9CB-4DE2-83A4-61033E39B178}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DisconnectRoute_1", "DisconnectRoute_1\DisconnectRoute_1.csproj", "{E367622B-6492-465C-AA19-476F912466F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +78,10 @@ Global
 		{BBA6F740-037C-4D6B-8A97-632F050BAD81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBA6F740-037C-4D6B-8A97-632F050BAD81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBA6F740-037C-4D6B-8A97-632F050BAD81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E367622B-6492-465C-AA19-476F912466F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E367622B-6492-465C-AA19-476F912466F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E367622B-6492-465C-AA19-476F912466F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E367622B-6492-465C-AA19-476F912466F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +95,9 @@ Global
 		{903C477D-653F-4FD6-B7B2-51D0CA943397} = {D92B0554-1BA6-4697-BE49-75569E29E3A3}
 		{248C871D-98BB-404F-8FB1-368D5E02B5B9} = {903C477D-653F-4FD6-B7B2-51D0CA943397}
 		{BBA6F740-037C-4D6B-8A97-632F050BAD81} = {248C871D-98BB-404F-8FB1-368D5E02B5B9}
+		{ABA92269-9536-413B-9031-264FEA3164C7} = {D92B0554-1BA6-4697-BE49-75569E29E3A3}
+		{0E352065-E9CB-4DE2-83A4-61033E39B178} = {ABA92269-9536-413B-9031-264FEA3164C7}
+		{E367622B-6492-465C-AA19-476F912466F2} = {0E352065-E9CB-4DE2-83A4-61033E39B178}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BE65E47D-38E7-4499-98EF-E86DD8CE84A7}

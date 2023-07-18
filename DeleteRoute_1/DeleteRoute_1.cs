@@ -51,24 +51,62 @@ dd/mm/2023	1.0.0.1		XXX, Skyline	Initial version
 
 namespace DeleteRoute_1
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Globalization;
-	using System.Text;
-	using Skyline.DataMiner.Automation;
-	
-	/// <summary>
-	/// Represents a DataMiner Automation script.
-	/// </summary>
-	public class Script
-	{
-		/// <summary>
-		/// The script entry point.
-		/// </summary>
-		/// <param name="engine">Link with SLAutomation process.</param>
-		public void Run(IEngine engine)
-		{
-	
-		}
-	}
+    using System;
+    using System.Linq;
+
+    using Skyline.DataMiner.Automation;
+    using Skyline.DataMiner.Core.DataMinerSystem.Automation;
+    using Skyline.DataMiner.Core.DataMinerSystem.Common;
+    using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum;
+    using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum.IAC.Common.Routes.Messages;
+
+    /// <summary>
+    /// Represents a DataMiner Automation script.
+    /// </summary>
+    public class Script
+    {
+        private const string DefaultOptionalLevel = "[Optional]";
+        private const int DeviceNameIndex = 1;
+        private const int DestinationNameIndex = 4;
+        private const int RoutesTableId = 3100;
+
+
+        /// <summary>
+        /// The script entry point.
+        /// </summary>
+        /// <param name="engine">Link with SLAutomation process.</param>
+		public void Run(Engine engine)
+        {
+            // Getting script parameters
+            string routeId = engine.GetScriptParam("RouteId").Value;
+
+            // Getting element
+            var dms = engine.GetDms();
+            var elementEVSCerebrum = dms.GetElements().Where(x => x.Protocol.Name == "EVS Cerebrum" && x.Protocol.Version == "Production").FirstOrDefault();
+
+            // Getting row for provided routeId
+            object[] rowData = elementEVSCerebrum.GetTable(RoutesTableId).GetRow(routeId);
+            var device = Convert.ToString(rowData[DeviceNameIndex]);
+            var destination = Convert.ToString(rowData[DestinationNameIndex]);
+
+            // Deleting Route
+            CreateRoute(engine, elementEVSCerebrum, device, destination);
+        }
+
+        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string destination)
+        {
+            var createRoute = new CreateRoute
+            {
+                DestLevelName = DefaultOptionalLevel,
+                DeviceInstance = device,
+                DestName = destination,
+                SourceLevelName = DefaultOptionalLevel,
+                SourceName = "NC",
+                UseTags = true,
+            };
+
+            var evsClient = new EvsCerebrumEngineClient(engine, evsElement.DmsElementId);
+            evsClient.CreateRouteAsync(createRoute);
+        }
+    }
 }

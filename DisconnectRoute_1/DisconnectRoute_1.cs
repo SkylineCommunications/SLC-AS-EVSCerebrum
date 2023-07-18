@@ -45,12 +45,14 @@ Revision History:
 
 DATE		VERSION		AUTHOR			COMMENTS
 
-dd/mm/2023	1.0.0.1		RRA, Skyline	Initial version
+dd/mm/2023	1.0.0.1		XXX, Skyline	Initial version
 ****************************************************************************
 */
 
-namespace CreateRoute_1
+namespace DisconnectRoute_1
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using Skyline.DataMiner.Automation;
@@ -65,27 +67,32 @@ namespace CreateRoute_1
     public class Script
 	{
         private const string DefaultOptionalLevel = "[Optional]";
+        private const int DeviceNameIndex = 1;
+        private const int DestinationNamePid = 3105;
+        private const int RoutesTableId = 3100;
 
         /// <summary>
         /// The script entry point.
         /// </summary>
         /// <param name="engine">Link with SLAutomation process.</param>
         public void Run(Engine engine)
-        {
+		{
             // Getting script parameters
-            var device = engine.GetScriptParam("Device").Value;
-            var source = engine.GetScriptParam("Source").Value;
-            var destination = engine.GetScriptParam("Destination").Value;
+            string destination = engine.GetScriptParam("Destination").Value;
 
             // Getting element
             var dms = engine.GetDms();
             var elementEVSCerebrum = dms.GetElements().Where(x => x.Protocol.Name == "EVS Cerebrum" && x.Protocol.Version == "Production").FirstOrDefault();
 
-            // Creating Route
-            CreateRoute(engine, elementEVSCerebrum, device, source, destination);
+            // Getting row for provided routeId
+            Object[] rowData = elementEVSCerebrum.GetTable(RoutesTableId).QueryData(new[] { new ColumnFilter() { Pid = DestinationNamePid, Value = destination, ComparisonOperator = ComparisonOperator.Equal } }).First(); // todo, check with Joey if we can get here non-existing value in destination parameter or not
+            var device = Convert.ToString(rowData[DeviceNameIndex]);
+
+            // Deleting Route
+            CreateRoute(engine, elementEVSCerebrum, device, destination);
         }
 
-        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string destination)
+        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string destination)
         {
             var createRoute = new CreateRoute
             {
@@ -93,7 +100,7 @@ namespace CreateRoute_1
                 DeviceInstance = device,
                 DestName = destination,
                 SourceLevelName = DefaultOptionalLevel,
-                SourceName = source,
+                SourceName = "NC",
                 UseTags = true,
             };
 

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <DMSScript options="272" xmlns="http://www.skyline.be/automation">
-	<Name>DeleteRoute</Name>
+	<Name>DisconnectRoute</Name>
 	<Description></Description>
 	<Type>Automation</Type>
 	<Author>SKYLINE2\RadeRA</Author>
@@ -14,14 +14,14 @@
 	</Memory>
 
 	<Parameters>
-		<ScriptParameter id="2" values="" type="string">
-			<Description>RouteId</Description>
-	</ScriptParameter>
+		<ScriptParameter id="2" type="string" values="">
+			<Description>Destination</Description>
+		</ScriptParameter>
 	</Parameters>
 
 	<Script>
 		<Exe id="1" type="csharp">
-			<Value><![CDATA[[Project:DeleteRoute_1]]]></Value>
+			<Value><![CDATA[[Project:DisconnectRoute_1]]]></Value>
 			<!--<Param type="debug">true</Param>-->
 			<Message></Message>
 		</Exe>
