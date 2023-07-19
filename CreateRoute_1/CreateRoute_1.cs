@@ -52,6 +52,7 @@ dd/mm/2023	1.0.0.1		RRA, Skyline	Initial version
 namespace CreateRoute_1
 {
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;
@@ -74,48 +75,68 @@ namespace CreateRoute_1
         public void Run(Engine engine)
         {
             // Getting script parameters
-            var device = GetFirstValueFromInputParameter(engine, "Device");
-            var source = GetFirstValueFromInputParameter(engine, "Source");
-            var sourceLevel = GetFirstValueFromInputParameter(engine, "Source Level");
-            var destination = GetFirstValueFromInputParameter(engine, "Destination");
-            var destinationLevel = GetFirstValueFromInputParameter(engine, "Destination Level");
+            var device = GetValuesFromInputParameter(engine, "Device").FirstOrDefault();
+            var source = GetValuesFromInputParameter(engine, "Source").FirstOrDefault();
+            var destination = GetValuesFromInputParameter(engine, "Destination").FirstOrDefault();
+            var levels = GetValuesFromInputParameter(engine, "Levels");
 
             // Getting element
             var dms = engine.GetDms();
             var elementEVSCerebrum = dms.GetElements().First(e => e.Protocol.Name == "EVS Cerebrum" && e.Protocol.Version == "Production");
 
             // Creating Route
-            CreateRoute(engine, elementEVSCerebrum, device, source, sourceLevel, destination, destinationLevel);
+            CreateRoute(engine, elementEVSCerebrum, device, source, destination, levels);
         }
 
-        private static string GetFirstValueFromInputParameter(IEngine engine, string parameterName)
+        private static string[] GetValuesFromInputParameter(IEngine engine, string parameterName)
         {
             try
             {
                 var input = JsonConvert.DeserializeObject<string[]>(engine.GetScriptParam(parameterName).Value);
-                return input.FirstOrDefault();
+                return input;
             }
             catch (Exception e)
             {
                 engine.Log($"Exception deserializing input parameter {parameterName}: {e}");
-                return null;
+                return new string[0];
             }
         }
 
-        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string sourceLevel, string destination, string destinationLevel)
+        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string destination, string[] levels)
         {
-            var createRoute = new CreateRoute
-            {
-                DestLevelName = destinationLevel ?? DefaultOptionalLevel,
-                DeviceInstance = device,
-                DestName = destination,
-                SourceLevelName = sourceLevel ?? DefaultOptionalLevel,
-                SourceName = source,
-                UseTags = false,
-            };
-
             var evsClient = new EvsCerebrumEngineClient(engine, evsElement.DmsElementId);
-            evsClient.CreateRouteAsync(createRoute);
+
+            if (!levels.Any())
+            {
+                var createRoute = new CreateRoute
+                {
+                    DestLevelName = DefaultOptionalLevel,
+                    DeviceInstance = device,
+                    DestName = destination,
+                    SourceLevelName = DefaultOptionalLevel,
+                    SourceName = source,
+                    UseTags = false,
+                };
+
+                evsClient.CreateRouteAsync(createRoute);
+            }
+            else
+            {
+                foreach (var level in levels)
+                {
+                    var createRoute = new CreateRoute
+                    {
+                        DestLevelName = level,
+                        DeviceInstance = device,
+                        DestName = destination,
+                        SourceLevelName = level,
+                        SourceName = source,
+                        UseTags = false,
+                    };
+
+                    evsClient.CreateRouteAsync(createRoute);
+                }
+            }
         }
     }
 }

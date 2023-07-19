@@ -24,10 +24,7 @@
 			<Description>Destination</Description>
 		</ScriptParameter>
 		<ScriptParameter id="5" type="string" values="">
-			<Description>Source Level</Description>
-		</ScriptParameter>
-		<ScriptParameter id="6" type="string" values="">
-			<Description>Destination Level</Description>
+			<Description>Levels</Description>
 		</ScriptParameter>
 	</Parameters>
 
