@@ -111,7 +111,7 @@ namespace CreateRoute_1
                 DestName = destination,
                 SourceLevelName = sourceLevel ?? DefaultOptionalLevel,
                 SourceName = source,
-                UseTags = true,
+                UseTags = false,
             };
 
             var evsClient = new EvsCerebrumEngineClient(engine, evsElement.DmsElementId);
