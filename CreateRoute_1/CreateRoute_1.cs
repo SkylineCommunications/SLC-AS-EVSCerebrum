@@ -54,6 +54,7 @@ namespace CreateRoute_1
     using System;
     using System.Diagnostics;
     using System.Linq;
+    using System.Reflection.Emit;
     using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Automation;
@@ -102,40 +103,23 @@ namespace CreateRoute_1
             }
         }
 
-        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string destination, string[] levels)
+        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string destination, string[] selectedLevels)
         {
             var evsClient = new EvsCerebrumEngineClient(engine, evsElement.DmsElementId);
 
-            if (!levels.Any())
+            foreach (var levelMnemonic in selectedLevels)
             {
-                var createRoute = new CreateRoute
+                var route = new CreateRoute
                 {
-                    DestLevelName = DefaultOptionalLevel,
+                    DestLevelName = levelMnemonic,
                     DeviceInstance = device,
                     DestName = destination,
-                    SourceLevelName = DefaultOptionalLevel,
+                    SourceLevelName = levelMnemonic,
                     SourceName = source,
                     UseTags = false,
                 };
 
-                evsClient.CreateRouteAsync(createRoute);
-            }
-            else
-            {
-                foreach (var level in levels)
-                {
-                    var createRoute = new CreateRoute
-                    {
-                        DestLevelName = level,
-                        DeviceInstance = device,
-                        DestName = destination,
-                        SourceLevelName = level,
-                        SourceName = source,
-                        UseTags = false,
-                    };
-
-                    evsClient.CreateRouteAsync(createRoute);
-                }
+                evsClient.CreateRouteAsync(route);
             }
         }
     }
