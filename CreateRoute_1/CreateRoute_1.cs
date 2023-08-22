@@ -52,9 +52,8 @@ dd/mm/2023	1.0.0.1		RRA, Skyline	Initial version
 namespace CreateRoute_1
 {
     using System;
-    using System.Diagnostics;
+    using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection.Emit;
     using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Automation;
@@ -62,11 +61,12 @@ namespace CreateRoute_1
     using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum;
     using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum.IAC.Common.Routes.Messages;
 
+
     /// <summary>
     /// Represents a DataMiner Automation script.
     /// </summary>
     public class Script
-	{
+    {
         private const string DefaultOptionalLevel = "[Optional]";
 
         /// <summary>
@@ -106,6 +106,23 @@ namespace CreateRoute_1
         private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string destination, string[] selectedLevels)
         {
             var evsClient = new EvsCerebrumEngineClient(engine, evsElement.DmsElementId);
+
+            if (!selectedLevels.Any())
+            {
+                var tableData = evsElement.GetTable(13100).GetData();
+
+                var levels = new List<string>();
+                foreach (var tableEntry in tableData.Values)
+                {
+                    string mnemonic = Convert.ToString(tableEntry[5]);
+                    if (!string.IsNullOrWhiteSpace(mnemonic))
+                    {
+                        levels.Add(mnemonic);
+                    }
+                }
+
+                selectedLevels = levels.ToArray();
+            }
 
             foreach (var levelMnemonic in selectedLevels)
             {
