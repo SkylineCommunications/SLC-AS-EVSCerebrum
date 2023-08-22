@@ -138,6 +138,8 @@ namespace CreateRoute_1
 
                 evsClient.CreateRouteAsync(route);
             }
+
+            engine.Sleep(2000); // Temporary workaround so the app is able to fetch the updated data. (Can be removed once real time updates are supported)
         }
     }
 }
