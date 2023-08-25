@@ -51,15 +51,16 @@ dd/mm/2023	1.0.0.1		RRA, Skyline	Initial version
 
 namespace CreateRoute_1
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Common;
     using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum;
     using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum.IAC.Common.Routes.Messages;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
 
 
     /// <summary>
@@ -109,19 +110,7 @@ namespace CreateRoute_1
 
             if (!selectedLevels.Any())
             {
-                var tableData = evsElement.GetTable(13100).GetData();
-
-                var levels = new List<string>();
-                foreach (var tableEntry in tableData.Values)
-                {
-                    string mnemonic = Convert.ToString(tableEntry[5]);
-                    if (!string.IsNullOrWhiteSpace(mnemonic))
-                    {
-                        levels.Add(mnemonic);
-                    }
-                }
-
-                selectedLevels = levels.ToArray();
+                selectedLevels = GatherAllLevels(evsElement);
             }
 
             foreach (var levelMnemonic in selectedLevels)
@@ -139,7 +128,43 @@ namespace CreateRoute_1
                 evsClient.CreateRouteAsync(route);
             }
 
-            engine.Sleep(2000); // Temporary workaround so the app is able to fetch the updated data. (Can be removed once real time updates are supported)
+            VerifyCreateRoute(engine, evsElement, source, destination, selectedLevels); // Temporary workaround so the app is able to fetch the updated data. (Can be removed once real time updates are supported)
+        }
+
+        private static string[] GatherAllLevels(IDmsElement evsElement)
+        {
+            var levelsTable = evsElement.GetTable(13100).GetData();
+
+            var levels = new List<string>();
+            foreach (var tableEntry in levelsTable.Values)
+            {
+                string mnemonic = Convert.ToString(tableEntry[5]);
+                if (!string.IsNullOrWhiteSpace(mnemonic))
+                {
+                    levels.Add(mnemonic);
+                }
+            }
+
+            return levels.ToArray();
+        }
+
+        private static void VerifyCreateRoute(Engine engine, IDmsElement evsElement, string source, string destination, string[] selectedLevels)
+        {
+            int retries = 0;
+            bool allEntriesFound = false;
+            while (!allEntriesFound && retries < 100)
+            {
+                Thread.Sleep(50);
+                var existingDestinationRows = evsElement.GetTable(12100).QueryData(new[]
+                {
+                    new ColumnFilter { Pid = 12109, Value = destination, ComparisonOperator = ComparisonOperator.Equal },
+                }).ToList();
+
+                var filteredRowsBasedOnLevelSelection = existingDestinationRows.Where(row => selectedLevels.Contains(Convert.ToString(row[10]))).ToList();
+                allEntriesFound = filteredRowsBasedOnLevelSelection.All(row => Convert.ToString(row[4]) == source);
+
+                retries++;
+            }
         }
     }
 }
