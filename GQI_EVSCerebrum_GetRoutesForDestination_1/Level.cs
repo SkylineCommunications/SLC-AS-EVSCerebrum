@@ -1,7 +1,9 @@
-﻿namespace GQI_EVSCerebrum_GetLevels_1
+﻿namespace GQI_EVSCerebrum_GetRoutesForDestination_1
 {
     internal class Level
     {
+        public string Instance { get; set; }
+
         public string Id { get; set; }
 
         public string Name { get; set; }

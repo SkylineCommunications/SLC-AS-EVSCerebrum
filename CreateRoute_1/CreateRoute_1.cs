@@ -51,25 +51,22 @@ dd/mm/2023	1.0.0.1		RRA, Skyline	Initial version
 
 namespace CreateRoute_1
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
     using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Common;
     using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum;
     using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum.IAC.Common.Routes.Messages;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-
 
     /// <summary>
     /// Represents a DataMiner Automation script.
     /// </summary>
     public class Script
     {
-        private const string DefaultOptionalLevel = "[Optional]";
-
         /// <summary>
         /// The script entry point.
         /// </summary>
@@ -154,7 +151,8 @@ namespace CreateRoute_1
             bool allEntriesFound = false;
             while (!allEntriesFound && retries < 100)
             {
-                Thread.Sleep(50);
+                engine.Sleep(50);
+
                 var existingDestinationRows = evsElement.GetTable(12100).QueryData(new[]
                 {
                     new ColumnFilter { Pid = 12109, Value = destination, ComparisonOperator = ComparisonOperator.Equal },
