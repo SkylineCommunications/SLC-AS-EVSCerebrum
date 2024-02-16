@@ -4,6 +4,8 @@
     {
         public string Instance { get; set; }
 
+        public string DisplayKey { get; set; }
+
         public string DestinationInstance { get; set; }
 
         public string DestinationName { get; set; }

@@ -23,5 +23,10 @@
         public string Destination { get; set; }
 
         public string DestinationLevel { get; set; }
+
+        public bool IsValid()
+        {
+            return !string.IsNullOrWhiteSpace(Source) && !string.IsNullOrWhiteSpace(SourceLevel) && !string.IsNullOrWhiteSpace(Destination) && !string.IsNullOrWhiteSpace(DestinationLevel);
+        }
     }
 }

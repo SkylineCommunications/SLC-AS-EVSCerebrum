@@ -49,9 +49,10 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
         foreach (var destinationAssociation in destinationAssociations.OrderBy(d => d.Instance))
         {
             var route = GetRouteForDestinationAssociation(destinationAssociation.Instance);
-            if (route == null)
+            if (!route.IsValid())
             {
-                levels.TryGetValue(destinationAssociation.LevelInstance, out var level);
+                //levels.TryGetValue(destinationAssociation.LevelInstance, out var level);
+                var level = levels.Values.FirstOrDefault(lvl => destinationAssociation.DisplayKey != null && destinationAssociation.DisplayKey.Contains(lvl.Mnemonic));
 
                 // get levels for destination
                 route = new Route
@@ -139,6 +140,7 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
             var destinationAssociation = new DestinationAssociation
             {
                 Instance = instance,
+                DisplayKey = displayKey,
                 DestinationInstance = destination,
                 DestinationName = destinationNameRegex.Success ? destinationNameRegex.Groups[1].Value : String.Empty,
                 LevelInstance = levelInstanceRegex.Success ? levelInstanceRegex.Groups[1].Value : String.Empty,
@@ -152,12 +154,14 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
 
     private ParameterValue[] GetDestinationAssociationsTableColumns(string destinationInstance)
     {
+        //"forceFullTable=true"
+
         var tableId = 15300;
         var getPartialTableMessage = new GetPartialTableMessage(
             dataminerId,
             elementId,
             tableId,
-            new[] { "forceFullTable=true", /*$"value=15302 == {destinationInstance}"*/ });
+            new[] { $"value=15302 == {destinationInstance}" }); // Temporary workaround to improve the performance
 
         var parameterChangeEventMessage = (ParameterChangeEventMessage)dms.SendMessage(getPartialTableMessage);
         if (parameterChangeEventMessage.NewValue?.ArrayValue == null)
