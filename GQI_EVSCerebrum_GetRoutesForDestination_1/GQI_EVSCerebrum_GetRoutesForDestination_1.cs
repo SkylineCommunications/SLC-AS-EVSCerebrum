@@ -154,14 +154,15 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
 
     private ParameterValue[] GetDestinationAssociationsTableColumns(string destinationInstance)
     {
-        //"forceFullTable=true"
+        // "forceFullTable=true"
+        // "value=15302 == {destinationInstance}"
 
         var tableId = 15300;
         var getPartialTableMessage = new GetPartialTableMessage(
             dataminerId,
             elementId,
             tableId,
-            new[] { $"value=15302 == {destinationInstance}" }); // Temporary workaround to improve the performance
+            new[] { $"forceFullTable=true" });
 
         var parameterChangeEventMessage = (ParameterChangeEventMessage)dms.SendMessage(getPartialTableMessage);
         if (parameterChangeEventMessage.NewValue?.ArrayValue == null)
