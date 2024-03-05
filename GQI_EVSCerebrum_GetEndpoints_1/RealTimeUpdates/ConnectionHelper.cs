@@ -1,4 +1,4 @@
-﻿namespace GQI_EVSCerebrum_GetMnemonics_1.RealTimeUpdates
+﻿namespace GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates
 {
     using System;
     using System.IO;

@@ -1,4 +1,4 @@
-﻿namespace GQI_EVSCerebrum_GetMnemonics_1.RealTimeUpdates
+﻿namespace GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates
 {
     using System;
     using System.Threading;
@@ -6,27 +6,25 @@
     using Skyline.DataMiner.Analytics.GenericInterface;
     using Skyline.DataMiner.Net;
 
-    internal static class StaticDataProvider<T>
+    internal static class StaticDataProvider
     {
-        private static Lazy<DataProvider<T>> _lazyDataProvider = new Lazy<DataProvider<T>>(CreateInstance);
+        private static Lazy<DataProvider> _lazyDataProvider = new Lazy<DataProvider>(CreateInstance);
         private static GQIDMS _gqiDms;
         private static int _dataminerId;
         private static int _elementId;
-        private static int _tableId;
 
-        public static DataProvider<T> Instance => _lazyDataProvider.Value;
+        public static DataProvider Instance => _lazyDataProvider.Value;
 
-        public static void Initialize(GQIDMS gqiDms, int dataminerId, int elementId, int tableId)
+        public static void Initialize(GQIDMS gqiDms, int dataminerId, int elementId)
         {
             _gqiDms = gqiDms ?? throw new ArgumentNullException(nameof(gqiDms));
             _dataminerId = dataminerId;
             _elementId = elementId;
-            _tableId = tableId;
         }
 
         public static void Reset()
         {
-            var newLazy = new Lazy<DataProvider<T>>(CreateInstance);
+            var newLazy = new Lazy<DataProvider>(CreateInstance);
             var oldLazy = Interlocked.Exchange(ref _lazyDataProvider, newLazy);
 
             if (oldLazy.IsValueCreated &&
@@ -36,7 +34,7 @@
             }
         }
 
-        private static DataProvider<T> CreateInstance()
+        private static DataProvider CreateInstance()
         {
             if (_gqiDms == null)
             {
@@ -44,7 +42,7 @@
             }
 
             var connection = CreateConnection(_gqiDms);
-            var dataProvider = new DataProvider<T>(connection, _dataminerId, _elementId, _tableId);
+            var dataProvider = new DataProvider(connection, _gqiDms, _dataminerId, _elementId);
 
             return dataProvider;
         }

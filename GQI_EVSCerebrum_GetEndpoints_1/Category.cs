@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GQI_EVSCerebrum_GetMnemonics_1
+namespace GQI_EVSCerebrum_GetEndpoints_1
 {
     internal class Category
     {
@@ -17,6 +17,8 @@ namespace GQI_EVSCerebrum_GetMnemonics_1
 
         public static List<Category> CreateCategories(ParameterValue[] columns)
         {
+            if (columns == null || columns.Length == 0) return new List<Category>();
+
             var categories = new List<Category>();
 
             for (int i = 0; i < columns[0].ArrayValue.Length; i++)

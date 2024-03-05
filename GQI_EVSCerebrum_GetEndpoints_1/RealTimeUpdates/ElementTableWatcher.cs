@@ -1,4 +1,4 @@
-﻿namespace GQI_EVSCerebrum_GetMnemonics_1.RealTimeUpdates
+﻿namespace GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates
 {
     using System;
 
@@ -10,14 +10,17 @@
     {
         private readonly Connection _connection;
         private readonly SubscriptionFilter _subscriptionFilter;
+        private readonly string _subscriptionId;
 
-        public ElementTableWatcher(Connection connection, int dataminerId, int elementId, int tableId)
+        public ElementTableWatcher(Connection connection, int dataminerId, int elementId, int tableId, string subscriptionId = "1")
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
             _connection.OnNewMessage += Connection_OnNewMessage;
 
+            _subscriptionId = subscriptionId;
+
             _subscriptionFilter = new SubscriptionFilterParameter(typeof(ParameterChangeEventMessage).Name, new[] { "forceFullTable=true" }, dataminerId, elementId, tableId, index: null);
-            _connection.AddSubscription("1", _subscriptionFilter);
+            _connection.AddSubscription(subscriptionId, _subscriptionFilter);
 
             _connection.Subscribe();
         }
@@ -28,7 +31,8 @@
         {
             try
             {
-                _connection.RemoveSubscription("1", _subscriptionFilter);
+                _connection.RemoveSubscription(_subscriptionId, _subscriptionFilter);
+                _connection.OnNewMessage -= Connection_OnNewMessage;
             }
             catch (Exception)
             {

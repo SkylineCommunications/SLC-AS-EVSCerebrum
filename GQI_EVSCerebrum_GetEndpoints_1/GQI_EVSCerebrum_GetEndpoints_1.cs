@@ -1,23 +1,27 @@
-namespace GQI_1_EVSCerebrum_GetMnemonics
+namespace GQI_EVSCerebrum_GetEndpoints_1
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection.Emit;
     using System.Text.RegularExpressions;
-    using GQI_EVSCerebrum_GetMnemonics_1;
+    using GQI_EVSCerebrum_GetEndpoints_1;
     using Skyline.DataMiner.Analytics.GenericInterface;
     using Skyline.DataMiner.Net.Messages;
     using Skyline.DataMiner.Net.Messages.Advanced;
     using Skyline.DataMiner.Analytics.GenericInterface;
     using Skyline.DataMiner.Net.Messages;
-    using GQI_EVSCerebrum_GetMnemonics_1.RealTimeUpdates;
+    using GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates;
+    using SLLoggerUtil.LoggerCategoryUtil.DataGateway;
+    using System.IO;
 
-    [GQIMetaData(Name = "EVS Cerebrum Get Mnemonics")]
-    public class GQI_EVSCerebrum_GetMnemonics : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIUpdateable
+    [GQIMetaData(Name = "EVS Cerebrum Get Endpoints")]
+    public class GQI_EVSCerebrum_GetEndpoints : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIUpdateable
     {
         private readonly GQIStringArgument mnemonicTypeArgument = new GQIStringArgument("Mnemonic Type") { IsRequired = true };
+        private readonly GQIStringArgument _categoryArgument = new GQIStringArgument("Category") { IsRequired = false };
         private MnemonicType mnemonic;
+        private string category;
 
         private GQIDMS dms;
 
@@ -34,7 +38,7 @@ namespace GQI_1_EVSCerebrum_GetMnemonics
             dms = args.DMS;
             GetEvsCerebrumArgument();
 
-            StaticDataProvider.Initialize(args.DMS, dataminerId, elementId, mnemonic);
+            StaticDataProvider.Initialize(dms, dataminerId, elementId);
             _dataProvider = StaticDataProvider.Instance;
 
             return new OnInitOutputArgs();
@@ -42,13 +46,19 @@ namespace GQI_1_EVSCerebrum_GetMnemonics
 
         public GQIArgument[] GetInputArguments()
         {
-            return new GQIArgument[] { mnemonicTypeArgument };
+            return new GQIArgument[]
+            {
+                mnemonicTypeArgument,
+                _categoryArgument,
+            };
         }
 
         public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
         {
-            var rawMnemonic = Convert.ToString(args.GetArgumentValue(mnemonicTypeArgument));
+            var rawMnemonic = args.GetArgumentValue(mnemonicTypeArgument);
             mnemonic = (MnemonicType)Enum.Parse(typeof(MnemonicType), rawMnemonic);
+
+            category = args.GetArgumentValue(_categoryArgument);
 
             return new OnArgumentsProcessedOutputArgs();
         }
@@ -57,23 +67,27 @@ namespace GQI_1_EVSCerebrum_GetMnemonics
         {
             return new GQIColumn[]
             {
-            new GQIStringColumn("Instance"),
-            new GQIStringColumn("Mnemonic"),
-            new GQIStringColumn("Categories"),
+                new GQIStringColumn("Instance"),
+                new GQIStringColumn("Mnemonic"),
+                new GQIStringColumn("Categories"),
             };
         }
 
         public void OnStartUpdates(IGQIUpdater updater)
         {
             _updater = updater;
-            _dataProvider.EndpointTable.Changed += TableData_OnChanged;
-            _dataProvider.CategoriesTable.Changed += TableData_OnChanged;
+            _dataProvider.SourceTable.Changed += TableData_OnChanged;
+            _dataProvider.DestinationsTable.Changed += TableData_OnChanged;
+            _dataProvider.SourceCategoriesTable.Changed += TableData_OnChanged;
+            _dataProvider.DestinationCategoriesTable.Changed += TableData_OnChanged;
         }
 
         public void OnStopUpdates()
         {
-            _dataProvider.EndpointTable.Changed -= TableData_OnChanged;
-            _dataProvider.CategoriesTable.Changed -= TableData_OnChanged;
+            _dataProvider.SourceTable.Changed -= TableData_OnChanged;
+            _dataProvider.DestinationsTable.Changed -= TableData_OnChanged;
+            _dataProvider.SourceCategoriesTable.Changed -= TableData_OnChanged;
+            _dataProvider.DestinationCategoriesTable.Changed -= TableData_OnChanged;
             _updater = null;
         }
 
@@ -125,8 +139,8 @@ namespace GQI_1_EVSCerebrum_GetMnemonics
 
         private IEnumerable<GQIRow> CalculateNewRows()
         {
-            var controlSurfaceFilter = new CerebrumFilter(_dataProvider, mnemonic);
-            var endPoints = controlSurfaceFilter.GetMnemonics();
+            var controlSurfaceFilter = new CerebrumFilter(_dataProvider, mnemonic, category);
+            var endPoints = controlSurfaceFilter.GetEndpoints();
 
             return endPoints.Select(x => x.ToRow());
         }
@@ -153,6 +167,22 @@ namespace GQI_1_EVSCerebrum_GetMnemonics
                     break;
                 }
             }
+        }
+
+        private void Log(int items)
+        {
+            try
+            {
+                using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates.txt"))
+                {
+                    sw.WriteLine($"Rows to be added: {items}");
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
         }
     }
 }

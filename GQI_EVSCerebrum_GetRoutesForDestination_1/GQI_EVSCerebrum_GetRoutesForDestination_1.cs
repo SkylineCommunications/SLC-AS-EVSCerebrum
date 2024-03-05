@@ -2,21 +2,55 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates;
 using GQI_EVSCerebrum_GetRoutesForDestination_1;
 using Skyline.DataMiner.Analytics.GenericInterface;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Net.Messages.Advanced;
 
 [GQIMetaData(Name = "EVS Cerebrum Get Routes For Destination")]
-public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnInit, IGQIInputArguments
+public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIUpdateable
 {
-    private readonly GQIStringArgument destinationArgument = new GQIStringArgument("Destination") { IsRequired = true };
+    private readonly GQIStringArgument _destinationArgument = new GQIStringArgument("Destination") { IsRequired = true };
+
     private string destination;
 
     private GQIDMS dms;
 
     private int dataminerId;
     private int elementId;
+
+    private DataProvider _dataProvider;
+    private CerebrumFilter cerebrumFilter;
+
+    private ICollection<GQIRow> _currentRows = Array.Empty<GQIRow>();
+    private IGQIUpdater _updater;
+
+    public OnInitOutputArgs OnInit(OnInitInputArgs args)
+    {
+        dms = args.DMS;
+        GetEvsCerebrumArgument();
+
+        StaticDataProvider.Initialize(dms, dataminerId, elementId);
+        _dataProvider = StaticDataProvider.Instance;
+
+        return new OnInitOutputArgs();
+    }
+
+    public GQIArgument[] GetInputArguments()
+    {
+        return new GQIArgument[]
+        {
+            _destinationArgument,
+        };
+    }
+
+    public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
+    {
+        destination = Convert.ToString(args.GetArgumentValue(_destinationArgument));
+
+        return new OnArgumentsProcessedOutputArgs();
+    }
 
     public GQIColumn[] GetColumns()
     {
@@ -29,64 +63,75 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
         };
     }
 
-    public GQIArgument[] GetInputArguments()
+    public void OnStartUpdates(IGQIUpdater updater)
     {
-        return new GQIArgument[] { destinationArgument };
+        _updater = updater;
+        _dataProvider.LevelsTable.Changed += TableData_OnChanged;
+        _dataProvider.RoutesTable.Changed += TableData_OnChanged;
+        _dataProvider.DestinationsAssociationsTable.Changed += TableData_OnChanged;
     }
 
-    public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
+    public void OnStopUpdates()
     {
-        destination = Convert.ToString(args.GetArgumentValue(destinationArgument));
-        return new OnArgumentsProcessedOutputArgs();
+        _dataProvider.LevelsTable.Changed -= TableData_OnChanged;
+        _dataProvider.RoutesTable.Changed -= TableData_OnChanged;
+        _dataProvider.DestinationsAssociationsTable.Changed -= TableData_OnChanged;
+        _updater = null;
     }
 
     public GQIPage GetNextPage(GetNextPageInputArgs args)
     {
-        var levels = GetLevels();
-        var destinationAssociations = GetDestinationAssociations();
+        var newRows = CalculateNewRows().ToArray();
 
-        var rows = new List<GQIRow>();
-        foreach (var destinationAssociation in destinationAssociations.OrderBy(d => d.Instance))
+        try
         {
-            var route = GetRouteForDestinationAssociation(destinationAssociation.Instance);
-            if (!route.IsValid())
+            return new GQIPage(newRows)
             {
-                //levels.TryGetValue(destinationAssociation.LevelInstance, out var level);
-                var level = levels.Values.FirstOrDefault(lvl => destinationAssociation.DisplayKey != null && destinationAssociation.DisplayKey.Contains(lvl.Mnemonic));
-
-                // get levels for destination
-                route = new Route
-                {
-                    Destination = destinationAssociation.DestinationName,
-                    DestinationLevel = level?.Mnemonic,
-                    Source = String.Empty,
-                    SourceLevel = String.Empty,
-                };
-            }
-
-            var row = new GQIRow(
-                new[]
-                {
-                    new GQICell { Value = route.Destination },
-                    new GQICell { Value = route.DestinationLevel },
-                    new GQICell { Value = route.Source },
-                    new GQICell { Value = route.SourceLevel },
-                });
-            rows.Add(row);
+                HasNextPage = false,
+            };
         }
-
-        return new GQIPage(rows.ToArray())
+        finally
         {
-            HasNextPage = false,
-        };
+            _currentRows = newRows;
+        }
     }
 
-    public OnInitOutputArgs OnInit(OnInitInputArgs args)
+    private void TableData_OnChanged(object sender, ParameterChangeEventMessage e)
     {
-        dms = args.DMS;
-        GetEvsCerebrumArgument();
+        var newRows = CalculateNewRows(tableDataOnChanged: true).ToList();
 
-        return new OnInitOutputArgs();
+        try
+        {
+            var comparison = new GqiTableComparer(_currentRows, newRows);
+
+            foreach (var row in comparison.RemovedRows)
+            {
+                _updater.RemoveRow(row.Key);
+            }
+
+            foreach (var row in comparison.UpdatedRows)
+            {
+                _updater.UpdateRow(row);
+            }
+
+            foreach (var row in comparison.AddedRows)
+            {
+                _updater.AddRow(row);
+            }
+        }
+        finally
+        {
+            _currentRows = newRows;
+        }
+    }
+
+    private IEnumerable<GQIRow> CalculateNewRows(bool tableDataOnChanged = false)
+    {
+        cerebrumFilter = cerebrumFilter ?? new CerebrumFilter(_dataProvider, destination);
+
+        var routes = cerebrumFilter.GetRoutes(tableDataOnChanged);
+
+        return routes.Select(x => x.ToRow());
     }
 
     private void GetEvsCerebrumArgument()
@@ -111,143 +156,5 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
                 break;
             }
         }
-    }
-
-    private List<DestinationAssociation> GetDestinationAssociations()
-    {
-        var columns = GetDestinationAssociationsTableColumns(destination);
-        if (!columns.Any())
-        {
-            return new List<DestinationAssociation>();
-        }
-
-        var destinationAssociations = new List<DestinationAssociation>();
-
-        for (int i = 0; i < columns[0].ArrayValue.Length; i++)
-        {
-            var destinationAssociationInstance = columns[1].ArrayValue[i]?.CellValue?.GetAsStringValue();
-            if (destinationAssociationInstance != destination)
-            {
-                continue;
-            }
-
-            var instance = columns[0].ArrayValue[i]?.CellValue?.GetAsStringValue();
-            var displayKey = columns[2].ArrayValue[i]?.CellValue?.GetAsStringValue();
-
-            var levelInstanceRegex = Regex.Match(instance, "^(.*?-\\d+)-\\d+$");
-            var destinationNameRegex = Regex.Match(displayKey, "^[^/]+/([^/]+)/");
-
-            var destinationAssociation = new DestinationAssociation
-            {
-                Instance = instance,
-                DisplayKey = displayKey,
-                DestinationInstance = destination,
-                DestinationName = destinationNameRegex.Success ? destinationNameRegex.Groups[1].Value : String.Empty,
-                LevelInstance = levelInstanceRegex.Success ? levelInstanceRegex.Groups[1].Value : String.Empty,
-            };
-
-            destinationAssociations.Add(destinationAssociation);
-        }
-
-        return destinationAssociations;
-    }
-
-    private ParameterValue[] GetDestinationAssociationsTableColumns(string destinationInstance)
-    {
-        // "forceFullTable=true"
-        // "value=15302 == {destinationInstance}"
-
-        var tableId = 15300;
-        var getPartialTableMessage = new GetPartialTableMessage(
-            dataminerId,
-            elementId,
-            tableId,
-            new[] { $"forceFullTable=true" });
-
-        var parameterChangeEventMessage = (ParameterChangeEventMessage)dms.SendMessage(getPartialTableMessage);
-        if (parameterChangeEventMessage.NewValue?.ArrayValue == null)
-        {
-            return new ParameterValue[0];
-        }
-
-        var columns = parameterChangeEventMessage.NewValue.ArrayValue;
-        if (columns.Length < 10)
-        {
-            return new ParameterValue[0];
-        }
-
-        return columns;
-    }
-
-    private Route GetRouteForDestinationAssociation(string destinationAssociationInstance)
-    {
-        try
-        {
-            object[] details = new object[4];
-            details[0] = dataminerId;
-            details[1] = elementId;
-            details[2] = 12100;
-            details[3] = destinationAssociationInstance;
-
-            var message = new SetDataMinerInfoMessage
-            {
-                DataMinerID = dataminerId,
-                ElementID = elementId,
-                What = 215,
-                Var1 = details,
-            };
-
-            var response = (SetDataMinerInfoResponseMessage)dms.SendMessage(message);
-            return new Route((object[])response.RawData);
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
-
-    private Dictionary<string, Level> GetLevels()
-    {
-        var columns = GetLevelsTableColumns();
-        if (!columns.Any())
-        {
-            return new Dictionary<string, Level>();
-        }
-
-        var levels = new Dictionary<string, Level>();
-
-        for (int i = 0; i < columns[3].ArrayValue.Length; i++)
-        {
-            var level = new Level
-            {
-                Instance = columns[0].ArrayValue[i]?.CellValue?.GetAsStringValue(),
-                Id = columns[3].ArrayValue[i]?.CellValue?.GetAsStringValue(),
-                Name = columns[4].ArrayValue[i]?.CellValue?.GetAsStringValue(),
-                Mnemonic = columns[5].ArrayValue[i]?.CellValue?.GetAsStringValue(),
-            };
-
-            levels[level.Instance] = level;
-        }
-
-        return levels;
-    }
-
-    private ParameterValue[] GetLevelsTableColumns()
-    {
-        var tableId = 13100;
-        var getPartialTableMessage = new GetPartialTableMessage(dataminerId, elementId, tableId, new[] { "forceFullTable=true" });
-        var parameterChangeEventMessage = (ParameterChangeEventMessage)dms.SendMessage(getPartialTableMessage);
-        if (parameterChangeEventMessage.NewValue?.ArrayValue == null)
-        {
-            return new ParameterValue[0];
-        }
-
-        var columns = parameterChangeEventMessage.NewValue.ArrayValue;
-        if (columns.Length < 6)
-        {
-            return new ParameterValue[0];
-        }
-
-        return columns;
     }
 }

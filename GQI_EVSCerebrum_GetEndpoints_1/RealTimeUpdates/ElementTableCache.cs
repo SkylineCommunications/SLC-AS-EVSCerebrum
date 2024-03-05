@@ -1,8 +1,9 @@
-﻿namespace GQI_EVSCerebrum_GetMnemonics_1.RealTimeUpdates
+﻿namespace GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates
 {
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using Skyline.DataMiner.Analytics.GenericInterface;
     using Skyline.DataMiner.Net;
@@ -16,15 +17,15 @@
     {
         private readonly ElementTableWatcher _watcher;
 
-        private readonly ConcurrentDictionary<int, ParameterValue[]> _tableObjectsById = new ConcurrentDictionary<int, ParameterValue[]>();
-
         private readonly int _dataminerId;
         private readonly int _elementId;
         private readonly int _tableId;
 
         private readonly GQIDMS _gqiDms;
 
-        public ElementTableCache(Connection connection, GQIDMS gqiDms, int dataminerId, int elementId, int tableId)
+        private ParameterValue _cachedTable;
+
+        public ElementTableCache(Connection connection, GQIDMS gqiDms, int dataminerId, int elementId, int tableId, string subscripionId = "1")
         {
             if (connection is null)
             {
@@ -46,7 +47,7 @@
             _tableId = tableId;
             _gqiDms = gqiDms;
 
-            _watcher = new ElementTableWatcher(connection, dataminerId, elementId, tableId);
+            _watcher = new ElementTableWatcher(connection, dataminerId, elementId, tableId, subscripionId);
             _watcher.Changed += Watcher_OnChanged;
 
             FillCache();
@@ -56,56 +57,75 @@
 
         public ParameterValue[] GetData()
         {
-            return _tableObjectsById.Values.First();
+            return _cachedTable.ArrayValue;
         }
 
         public void Dispose()
         {
-            _watcher.Dispose();
+            _watcher.Changed -= Watcher_OnChanged;
+            _watcher?.Dispose();
         }
 
         private void FillCache()
         {
-            var columns = GetTableColumns();
-            if (!columns.Any())
+            var table = GetTableColumns();
+            if (table is null)
             {
                 return;
             }
 
-            UpdateCache(columns);
+            _cachedTable = table;
         }
 
-        private void UpdateCache(ParameterValue[] columns)
+        private void UpdateCache(ParameterChangeEventMessage message)
         {
-            _tableObjectsById.Clear();
-            _tableObjectsById[_tableId] = columns;
+            var newTable = message.NewValue;
+            if (newTable is null || message.ParameterID != _tableId) return;
+
+            _cachedTable.ApplyUpdate(message);
         }
 
-        private ParameterValue[] GetTableColumns()
+        private ParameterValue GetTableColumns()
         {
             var getPartialTableMessage = new GetPartialTableMessage(_dataminerId, _elementId, _tableId, new[] { "forceFullTable=true" });
             var parameterChangeEventMessage = (ParameterChangeEventMessage)_gqiDms.SendMessage(getPartialTableMessage);
             if (parameterChangeEventMessage.NewValue?.ArrayValue == null)
             {
-                return new ParameterValue[0];
+                return null;
             }
 
-            var columns = parameterChangeEventMessage.NewValue.ArrayValue;
+            var table = parameterChangeEventMessage.NewValue;
 
             int lengthCheck = (_tableId == 14100 || _tableId == 15100) ? 7 : 4;
-            if (columns.Length < lengthCheck)
+            if (table.ArrayValue.Length < lengthCheck)
             {
-                return new ParameterValue[0];
+                return null;
             }
 
-            return columns;
+            return table;
         }
 
         private void Watcher_OnChanged(object sender, ParameterChangeEventMessage e)
         {
-            UpdateCache(e.NewValue.ArrayValue);
+            UpdateCache(e);
 
             Changed?.Invoke(this, e);
+        }
+
+        private void Log(ParameterValue[] columns)
+        {
+            try
+            {
+                using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates.txt"))
+                {
+                    //sw.WriteLine($"Item cached Dictionary: {_tableObjectsById.Values.Last().Length}");
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
         }
     }
 }

@@ -2,11 +2,12 @@
 using Skyline.DataMiner.Net.Messages;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GQI_EVSCerebrum_GetMnemonics_1
+namespace GQI_EVSCerebrum_GetEndpoints_1
 {
     internal class EndPoint
     {
@@ -18,7 +19,11 @@ namespace GQI_EVSCerebrum_GetMnemonics_1
 
         public static List<EndPoint> CreateEndpoints(ParameterValue[] columns)
         {
+            if (columns == null || columns.Length == 0) return new List<EndPoint>();
+
             var endPoints = new List<EndPoint>();
+
+            Log(columns);
 
             for (int i = 0; i < columns[0].ArrayValue.Length; i++)
             {
@@ -41,12 +46,28 @@ namespace GQI_EVSCerebrum_GetMnemonics_1
         {
             var row = new GQIRow(new[]
             {
-                new GQICell { Value = Instance },
-                new GQICell { Value = Mnemonic },
-                new GQICell { Value = string.Join(";", Categories) },
+                new GQICell { Value = Instance ?? string.Empty },
+                new GQICell { Value = Mnemonic ?? string.Empty },
+                new GQICell { Value = Categories != null ? string.Join(";", Categories) : string.Empty },
             });
 
             return row;
+        }
+
+        private static void Log(ParameterValue[] columns)
+        {
+            try
+            {
+                using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates.txt"))
+                {
+                    sw.WriteLine($"Endpoint class: Colums length: {columns.Length}");
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            
         }
     }
 }
