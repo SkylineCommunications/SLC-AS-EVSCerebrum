@@ -18,8 +18,8 @@
     <DefineConstants>$(DefineConstants);DCFv1;DBInfo;ALARM_SQUASHING</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.0.5" />
-    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Common" Version="1.1.0.5" />
+    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.1.5" />
+    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Common" Version="1.1.1.5" />
     <PackageReference Include="Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum" Version="1.0.0.2" />
   </ItemGroup>
   <ProjectExtensions>
@@ -28,6 +28,6 @@
     </VisualStudio>
   </ProjectExtensions>
   <ItemGroup>
-    <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.3.8" />
+    <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.4.4.1-rc" />
   </ItemGroup>
 </Project>

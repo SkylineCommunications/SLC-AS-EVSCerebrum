@@ -108,7 +108,7 @@ namespace GQI_EVSCerebrum_GetEndpoints_1
             }
         }
 
-        private void TableData_OnChanged(object sender, ParameterChangeEventMessage e)
+        private void TableData_OnChanged(object sender, ParameterTableUpdateEventMessage e)
         {
             var newRows = CalculateNewRows().ToList();
 
@@ -167,22 +167,6 @@ namespace GQI_EVSCerebrum_GetEndpoints_1
                     break;
                 }
             }
-        }
-
-        private void Log(int items)
-        {
-            try
-            {
-                using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates.txt"))
-                {
-                    sw.WriteLine($"Rows to be added: {items}");
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
         }
     }
 }

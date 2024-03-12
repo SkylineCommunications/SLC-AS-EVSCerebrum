@@ -53,7 +53,7 @@
             FillCache();
         }
 
-        public event EventHandler<ParameterChangeEventMessage> Changed;
+        public event EventHandler<ParameterTableUpdateEventMessage> Changed;
 
         public ParameterValue[] GetData()
         {
@@ -77,7 +77,7 @@
             _cachedTable = table;
         }
 
-        private void UpdateCache(ParameterChangeEventMessage message)
+        private void UpdateCache(ParameterTableUpdateEventMessage message)
         {
             var newTable = message.NewValue;
             if (newTable is null || message.ParameterID != _tableId) return;
@@ -97,27 +97,11 @@
             return parameterChangeEventMessage.NewValue;
         }
 
-        private void Watcher_OnChanged(object sender, ParameterChangeEventMessage e)
+        private void Watcher_OnChanged(object sender, ParameterTableUpdateEventMessage e)
         {
             UpdateCache(e);
 
             Changed?.Invoke(this, e);
-        }
-
-        private void Log(ParameterValue[] columns)
-        {
-            try
-            {
-                using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates.txt"))
-                {
-                    //sw.WriteLine($"Item cached Dictionary: {_tableObjectsById.Values.Last().Length}");
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
         }
     }
 }

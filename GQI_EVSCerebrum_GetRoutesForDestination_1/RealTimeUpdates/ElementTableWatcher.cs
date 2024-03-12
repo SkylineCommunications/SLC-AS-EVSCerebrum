@@ -1,7 +1,7 @@
 ﻿namespace GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates
 {
     using System;
-
+    using System.IO;
     using Skyline.DataMiner.Net;
     using Skyline.DataMiner.Net.Messages;
     using Skyline.DataMiner.Net.SubscriptionFilters;
@@ -19,13 +19,13 @@
 
             _subscriptionId = subscriptionId;
 
-            _subscriptionFilter = new SubscriptionFilterParameter(typeof(ParameterChangeEventMessage).Name, new[] { "forceFullTable=true" }, dataminerId, elementId, tableId, index: null);
+            _subscriptionFilter = new SubscriptionFilterParameter(typeof(ParameterChangeEventMessage).Name, new string[0], dataminerId, elementId, tableId, index: null) { Options = SubscriptionFilterOptions.SkipInitialEvents };
             _connection.AddSubscription(subscriptionId, _subscriptionFilter);
 
             _connection.Subscribe();
         }
 
-        public event EventHandler<ParameterChangeEventMessage> Changed;
+        public event EventHandler<ParameterTableUpdateEventMessage> Changed;
 
         public void Dispose()
         {
@@ -42,7 +42,7 @@
 
         private void Connection_OnNewMessage(object sender, NewMessageEventArgs e)
         {
-            if (e.Message is ParameterChangeEventMessage tableChange)
+            if (e.Message is ParameterTableUpdateEventMessage tableChange)
             {
                 Changed?.Invoke(this, tableChange);
             }

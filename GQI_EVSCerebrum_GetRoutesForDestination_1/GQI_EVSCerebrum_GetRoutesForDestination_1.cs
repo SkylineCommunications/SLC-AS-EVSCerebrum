@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates;
@@ -11,7 +12,7 @@ using Skyline.DataMiner.Net.Messages.Advanced;
 [GQIMetaData(Name = "EVS Cerebrum Get Routes For Destination")]
 public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnInit, IGQIInputArguments, IGQIUpdateable
 {
-    private readonly GQIStringArgument _destinationArgument = new GQIStringArgument("Destination") { IsRequired = true };
+    private readonly GQIStringArgument _destinationArgument = new GQIStringArgument("Destination") { IsRequired = false };
 
     private string destination;
 
@@ -96,9 +97,11 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
         }
     }
 
-    private void TableData_OnChanged(object sender, ParameterChangeEventMessage e)
+    private void TableData_OnChanged(object sender, ParameterTableUpdateEventMessage e)
     {
-        var newRows = CalculateNewRows(tableDataOnChanged: true).ToList();
+        var newRows = CalculateNewRows().ToList();
+
+        Log();
 
         try
         {
@@ -125,11 +128,11 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
         }
     }
 
-    private IEnumerable<GQIRow> CalculateNewRows(bool tableDataOnChanged = false)
+    private IEnumerable<GQIRow> CalculateNewRows()
     {
         cerebrumFilter = cerebrumFilter ?? new CerebrumFilter(_dataProvider, destination);
 
-        var routes = cerebrumFilter.GetRoutes(tableDataOnChanged);
+        var routes = cerebrumFilter.GetRoutes();
 
         return routes.Select(x => x.ToRow());
     }
@@ -156,5 +159,21 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
                 break;
             }
         }
+    }
+
+    private void Log()
+    {
+        try
+        {
+            using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates2.txt"))
+            {
+                sw.WriteLine($"Script GetRoutesForDestination| table data on changed");
+            }
+        }
+        catch (Exception)
+        {
+
+        }
+
     }
 }

@@ -55,15 +55,16 @@
 
         public GQIRow ToRow()
         {
-            var cells = new[]
-            {
-                new GQICell { Value = Destination },
-                new GQICell { Value = DestinationLevel },
-                new GQICell { Value = Source },
-                new GQICell { Value = SourceLevel },
-            };
+            var row = new GQIRow(
+                new[]
+                {
+                    new GQICell { Value = Destination },
+                    new GQICell { Value = DestinationLevel },
+                    new GQICell { Value = Source },
+                    new GQICell { Value = SourceLevel },
+                });
 
-            return new GQIRow(Instance, cells);
+            return row;
         }
 
         public bool IsValid()

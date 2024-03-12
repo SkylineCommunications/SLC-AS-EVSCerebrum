@@ -23,8 +23,6 @@ namespace GQI_EVSCerebrum_GetEndpoints_1
 
             var endPoints = new List<EndPoint>();
 
-            Log(columns);
-
             for (int i = 0; i < columns[0].ArrayValue.Length; i++)
             {
                 var nameValue = columns[5].ArrayValue[i]?.CellValue?.GetAsStringValue();
@@ -44,30 +42,16 @@ namespace GQI_EVSCerebrum_GetEndpoints_1
 
         public GQIRow ToRow()
         {
-            var row = new GQIRow(new[]
+            var cells = new[]
             {
                 new GQICell { Value = Instance ?? string.Empty },
                 new GQICell { Value = Mnemonic ?? string.Empty },
                 new GQICell { Value = Categories != null ? string.Join(";", Categories) : string.Empty },
-            });
+            };
+
+            var row = new GQIRow(Instance, cells);
 
             return row;
-        }
-
-        private static void Log(ParameterValue[] columns)
-        {
-            try
-            {
-                using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates.txt"))
-                {
-                    sw.WriteLine($"Endpoint class: Colums length: {columns.Length}");
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-            
         }
     }
 }

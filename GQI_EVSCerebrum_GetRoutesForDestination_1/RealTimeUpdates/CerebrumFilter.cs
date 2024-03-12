@@ -28,12 +28,9 @@
 
         public List<DestinationAssociation> AllDestinationAssociations { get; set; } = new List<DestinationAssociation>();
 
-        public List<Route> GetRoutes(bool tableOnChangedEvent = false)
+        public List<Route> GetRoutes()
         {
-            if (tableOnChangedEvent)
-            {
-                Initialize();
-            }
+            Initialize();
 
             return FilterRoutesBasedOnDestinationAssociation();
         }
@@ -78,6 +75,7 @@
                     // get levels for destination
                     route = new Route
                     {
+                        Instance = level?.Instance,
                         Destination = destinationAssociation.DestinationName,
                         DestinationLevel = level?.Mnemonic,
                         Source = String.Empty,
@@ -88,7 +86,7 @@
                 routesAlignedWithDestinationAssociations.Add(route);
             }
 
-            return routesAlignedWithDestinationAssociations;
+            return routesAlignedWithDestinationAssociations.OrderByDescending(x => x.DestinationLevel).ToList();
         }
 
         private void Log(int items)

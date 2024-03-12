@@ -52,21 +52,5 @@
 
             return result;
         }
-
-        private void Log(int items)
-        {
-            try
-            {
-                using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates.txt"))
-                {
-                    sw.WriteLine($"Category: {_category}, Filtered items: {items}");
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
-        }
     }
 }

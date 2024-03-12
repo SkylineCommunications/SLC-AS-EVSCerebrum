@@ -19,13 +19,13 @@
 
             _subscriptionId = subscriptionId;
 
-            _subscriptionFilter = new SubscriptionFilterParameter(typeof(ParameterChangeEventMessage).Name, new[] { "forceFullTable=true" }, dataminerId, elementId, tableId, index: null);
+            _subscriptionFilter = new SubscriptionFilterParameter(typeof(ParameterChangeEventMessage).Name, new string[0], dataminerId, elementId, tableId, index: null);
             _connection.AddSubscription(subscriptionId, _subscriptionFilter);
 
             _connection.Subscribe();
         }
 
-        public event EventHandler<ParameterChangeEventMessage> Changed;
+        public event EventHandler<ParameterTableUpdateEventMessage> Changed;
 
         public void Dispose()
         {
@@ -42,7 +42,7 @@
 
         private void Connection_OnNewMessage(object sender, NewMessageEventArgs e)
         {
-            if (e.Message is ParameterChangeEventMessage tableChange)
+            if (e.Message is ParameterTableUpdateEventMessage tableChange)
             {
                 Changed?.Invoke(this, tableChange);
             }
