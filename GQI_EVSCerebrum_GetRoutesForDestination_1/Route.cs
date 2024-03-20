@@ -63,7 +63,7 @@
                 new GQICell { Value = SourceLevel },
             };
 
-            return new GQIRow(Instance, cells);
+            return new GQIRow(DestinationLevel, cells);
         }
 
         public bool IsValid()

@@ -30,7 +30,9 @@
             var categories = Category.CreateCategories(categoryColumnData);
 
             UpdateMnemonicCategories(endPoints, categories);
-            return FilterEndPointsBasedOnCategory(endPoints);
+            var filteredEndpoints = FilterEndPointsBasedOnCategory(endPoints);
+
+            return filteredEndpoints.OrderBy(e => e.Mnemonic).ToList();
         }
 
         private void UpdateMnemonicCategories(List<EndPoint> endpoints, List<Category> categories)

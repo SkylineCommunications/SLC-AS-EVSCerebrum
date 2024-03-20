@@ -64,22 +64,6 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
         };
     }
 
-    public void OnStartUpdates(IGQIUpdater updater)
-    {
-        _updater = updater;
-        _dataProvider.LevelsTable.Changed += TableData_OnChanged;
-        _dataProvider.RoutesTable.Changed += TableData_OnChanged;
-        _dataProvider.DestinationsAssociationsTable.Changed += TableData_OnChanged;
-    }
-
-    public void OnStopUpdates()
-    {
-        _dataProvider.LevelsTable.Changed -= TableData_OnChanged;
-        _dataProvider.RoutesTable.Changed -= TableData_OnChanged;
-        _dataProvider.DestinationsAssociationsTable.Changed -= TableData_OnChanged;
-        _updater = null;
-    }
-
     public GQIPage GetNextPage(GetNextPageInputArgs args)
     {
         var newRows = CalculateNewRows().ToArray();
@@ -97,11 +81,25 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
         }
     }
 
+    public void OnStartUpdates(IGQIUpdater updater)
+    {
+        _updater = updater;
+        _dataProvider.LevelsTable.Changed += TableData_OnChanged;
+        _dataProvider.RoutesTable.Changed += TableData_OnChanged;
+        _dataProvider.DestinationsAssociationsTable.Changed += TableData_OnChanged;
+    }
+
+    public void OnStopUpdates()
+    {
+        _dataProvider.LevelsTable.Changed -= TableData_OnChanged;
+        _dataProvider.RoutesTable.Changed -= TableData_OnChanged;
+        _dataProvider.DestinationsAssociationsTable.Changed -= TableData_OnChanged;
+        _updater = null;
+    }
+
     private void TableData_OnChanged(object sender, ParameterTableUpdateEventMessage e)
     {
         var newRows = CalculateNewRows().ToList();
-
-        Log();
 
         try
         {
@@ -159,21 +157,5 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
                 break;
             }
         }
-    }
-
-    private void Log()
-    {
-        try
-        {
-            using (StreamWriter sw = File.AppendText(@"C:\Skyline_Data\RealTimeUpdates2.txt"))
-            {
-                sw.WriteLine($"Script GetRoutesForDestination| table data on changed");
-            }
-        }
-        catch (Exception)
-        {
-
-        }
-
     }
 }

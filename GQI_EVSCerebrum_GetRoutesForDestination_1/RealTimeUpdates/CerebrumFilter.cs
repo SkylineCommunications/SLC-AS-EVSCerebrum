@@ -1,9 +1,6 @@
 ﻿namespace GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates
 {
     using GQI_EVSCerebrum_GetRoutesForDestination_1;
-    using Skyline.DataMiner.Analytics.GenericInterface;
-    using Skyline.DataMiner.Net.Messages;
-    using Skyline.DataMiner.Net.SLDataGateway.Types;
     using System;
     using System.Collections.Generic;
     using System.IO;
