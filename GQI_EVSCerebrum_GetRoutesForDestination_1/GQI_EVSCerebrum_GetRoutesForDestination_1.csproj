@@ -16,13 +16,13 @@
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);DCFv1;DBInfo;ALARM_SQUASHING</DefineConstants>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.1.5" />
-    <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.4.4.1-rc" />
-  </ItemGroup>
   <ProjectExtensions>
     <VisualStudio>
       <UserProperties DisLinkedXmlFile="..\GQI_EVSCerebrum_GetRoutesForDestination.xml" DisProjectType="automationScriptProject" DisLinkId="1" />
     </VisualStudio>
   </ProjectExtensions>
+  <ItemGroup>
+    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.1.6" />
+    <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.4.4.1-rc" />
+  </ItemGroup>
 </Project>

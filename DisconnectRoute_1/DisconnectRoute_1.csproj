@@ -23,11 +23,9 @@
     </VisualStudio>
   </ProjectExtensions>
   <ItemGroup>
-    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.1.5" />
-    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Common" Version="1.1.1.5" />
-    <PackageReference Include="Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum" Version="1.0.0.2" />
-  </ItemGroup>
-  <ItemGroup>
+    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.1.6" />
+    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Common" Version="1.1.1.6" />
     <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.4.4.1-rc" />
+    <PackageReference Include="Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum" Version="1.0.0.2" />
   </ItemGroup>
 </Project>
