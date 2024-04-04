@@ -128,7 +128,7 @@ public class GQI_EVSCerebrum_GetRoutesForDestination : IGQIDataSource, IGQIOnIni
 
     private IEnumerable<GQIRow> CalculateNewRows()
     {
-        cerebrumFilter = cerebrumFilter ?? new CerebrumFilter(_dataProvider, destination);
+        cerebrumFilter = new CerebrumFilter(_dataProvider, destination);
 
         var routes = cerebrumFilter.GetRoutes();
 
