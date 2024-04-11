@@ -24,6 +24,7 @@
   </ProjectExtensions>
   <ItemGroup>
     <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.0.1" />
+    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Common" Version="1.1.1.8" />
     <PackageReference Include="Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum" Version="1.0.0.2" />
   </ItemGroup>
 </Project>
