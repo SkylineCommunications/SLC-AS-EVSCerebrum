@@ -1,5 +1,6 @@
 ﻿namespace GQI_EVSCerebrum_GetEndpoints_1.RealTimeUpdates
 {
+    using GQI_EVSCerebrum_GetRoutesForDestination_1;
     using Skyline.DataMiner.Analytics.GenericInterface;
     using Skyline.DataMiner.Net.Messages;
     using Skyline.DataMiner.Net.SLDataGateway.Types;
@@ -30,6 +31,15 @@
             var categories = Category.CreateCategories(categoryColumnData);
 
             UpdateMnemonicCategories(endPoints, categories);
+
+            if (_mnemonicType == MnemonicType.Destinations)
+            {
+                var routesColumnData = _dataProvider.RoutesTable.GetData();
+                var routes = Route.CreateRoutes(routesColumnData);
+
+                UpdateDestinations(endPoints, routes);
+            }
+
             var filteredEndpoints = FilterEndPointsBasedOnCategory(endPoints);
 
             return filteredEndpoints.OrderBy(e => e.Mnemonic).ToList();
@@ -41,6 +51,17 @@
             {
                 var matchingCategories = categories.Where(c => c.Mnemonic == endpoint.Mnemonic).Select(c => c.Name).ToList();
                 endpoint.Categories = matchingCategories;
+            }
+        }
+
+        private void UpdateDestinations(List<EndPoint> destinations, List<Route> routes)
+        {
+            foreach (var destination in destinations)
+            {
+                if (!routes.Any(r => r.Destination == destination.Mnemonic)) continue;
+
+                var firstConnectedSource = routes.Where(r => r.Destination == destination.Mnemonic).OrderByDescending(r => r.DestinationLevel).Select(r => r.Source).FirstOrDefault();
+                destination.ConnectedSource = firstConnectedSource;
             }
         }
 

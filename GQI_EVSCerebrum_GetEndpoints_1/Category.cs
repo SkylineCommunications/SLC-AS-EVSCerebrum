@@ -1,12 +1,8 @@
-﻿using Skyline.DataMiner.Net.Messages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GQI_EVSCerebrum_GetEndpoints_1
+﻿namespace GQI_EVSCerebrum_GetEndpoints_1
 {
+    using System.Collections.Generic;
+    using Skyline.DataMiner.Net.Messages;
+
     internal class Category
     {
         public string Instance { get; set; }

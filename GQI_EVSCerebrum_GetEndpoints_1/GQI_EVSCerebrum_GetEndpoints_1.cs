@@ -70,6 +70,7 @@ namespace GQI_EVSCerebrum_GetEndpoints_1
                 new GQIStringColumn("Instance"),
                 new GQIStringColumn("Mnemonic"),
                 new GQIStringColumn("Categories"),
+                new GQIStringColumn("Connected Source"),
             };
         }
 
@@ -80,6 +81,7 @@ namespace GQI_EVSCerebrum_GetEndpoints_1
             _dataProvider.DestinationsTable.Changed += TableData_OnChanged;
             _dataProvider.SourceCategoriesTable.Changed += TableData_OnChanged;
             _dataProvider.DestinationCategoriesTable.Changed += TableData_OnChanged;
+            _dataProvider.RoutesTable.Changed += TableData_OnChanged;
         }
 
         public void OnStopUpdates()
@@ -88,6 +90,7 @@ namespace GQI_EVSCerebrum_GetEndpoints_1
             _dataProvider.DestinationsTable.Changed -= TableData_OnChanged;
             _dataProvider.SourceCategoriesTable.Changed -= TableData_OnChanged;
             _dataProvider.DestinationCategoriesTable.Changed -= TableData_OnChanged;
+            _dataProvider.RoutesTable.Changed -= TableData_OnChanged;
             _updater = null;
         }
 

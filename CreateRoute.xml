@@ -26,6 +26,9 @@
 		<ScriptParameter id="5" type="string" values="">
 			<Description>Levels</Description>
 		</ScriptParameter>
+		<ScriptParameter id="6" type="string" values="">
+			<Description>AllLevelTake</Description>
+		</ScriptParameter>
 	</Parameters>
 
 	<Script>

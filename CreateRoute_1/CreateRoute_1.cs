@@ -61,30 +61,37 @@ namespace CreateRoute_1
     using Skyline.DataMiner.Core.DataMinerSystem.Common;
     using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum;
     using Skyline.DataMiner.Utils.ConnectorAPI.EvsCerebrum.IAC.Common.Routes.Messages;
+    using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
     /// <summary>
     /// Represents a DataMiner Automation script.
     /// </summary>
     public class Script
     {
+        private string device;
+        private string source;
+        private string destination;
+        private string[] levels;
+        private bool allLevelTake;
+
+        private InteractiveController interactiveController;
+
         /// <summary>
         /// The script entry point.
         /// </summary>
         /// <param name="engine">Link with SLAutomation process.</param>
         public void Run(Engine engine)
         {
-            // Getting script parameters
-            var device = GetValuesFromInputParameter(engine, "Device").FirstOrDefault();
-            var source = GetValuesFromInputParameter(engine, "Source").FirstOrDefault();
-            var destination = GetValuesFromInputParameter(engine, "Destination").FirstOrDefault();
-            var levels = GetValuesFromInputParameter(engine, "Levels");
+            device = GetValuesFromInputParameter(engine, "Device").FirstOrDefault();
+            source = GetValuesFromInputParameter(engine, "Source").FirstOrDefault();
+            destination = GetValuesFromInputParameter(engine, "Destination").FirstOrDefault();
+            levels = GetValuesFromInputParameter(engine, "Levels");
+            allLevelTake = Convert.ToBoolean(engine.GetScriptParam("AllLevelTake").Value);
 
-            // Getting element
             var dms = engine.GetDms();
             var elementEVSCerebrum = dms.GetElements().First(e => e.Protocol.Name == "EVS Cerebrum" && e.Protocol.Version == "Production");
 
-            // Creating Route
-            CreateRoute(engine, elementEVSCerebrum, device, source, destination, levels);
+            CreateRoute(engine, elementEVSCerebrum);
         }
 
         private static string[] GetValuesFromInputParameter(IEngine engine, string parameterName)
@@ -99,33 +106,6 @@ namespace CreateRoute_1
                 engine.Log($"Exception deserializing input parameter {parameterName}: {e}");
                 return new string[0];
             }
-        }
-
-        private static void CreateRoute(Engine engine, IDmsElement evsElement, string device, string source, string destination, string[] selectedLevels)
-        {
-            var evsClient = new EvsCerebrumEngineClient(engine, evsElement.DmsElementId);
-
-            if (!selectedLevels.Any())
-            {
-                selectedLevels = GatherAllLevels(evsElement);
-            }
-
-            foreach (var levelMnemonic in selectedLevels)
-            {
-                var route = new CreateRoute
-                {
-                    DestLevelName = levelMnemonic,
-                    DeviceInstance = device,
-                    DestName = destination,
-                    SourceLevelName = levelMnemonic,
-                    SourceName = source,
-                    UseTags = false,
-                };
-
-                evsClient.CreateRouteAsync(route);
-            }
-
-            VerifyCreateRoute(engine, evsElement, source, destination, selectedLevels); // Temporary workaround so the app is able to fetch the updated data. (Can be removed once real time updates are supported)
         }
 
         private static string[] GatherAllLevels(IDmsElement evsElement)
@@ -145,11 +125,41 @@ namespace CreateRoute_1
             return levels.ToArray();
         }
 
-        private static void VerifyCreateRoute(Engine engine, IDmsElement evsElement, string source, string destination, string[] selectedLevels)
+        private void CreateRoute(Engine engine, IDmsElement evsElement)
+        {
+            var evsClient = new EvsCerebrumEngineClient(engine, evsElement.DmsElementId);
+
+            if (allLevelTake || !levels.Any())
+            {
+                levels = GatherAllLevels(evsElement);
+            }
+
+            foreach (var levelMnemonic in levels)
+            {
+                var route = new CreateRoute
+                {
+                    DestLevelName = levelMnemonic,
+                    DeviceInstance = device,
+                    DestName = destination,
+                    SourceLevelName = levelMnemonic,
+                    SourceName = source,
+                    UseTags = false,
+                };
+
+                evsClient.CreateRouteAsync(route);
+            }
+
+            if (!VerifyCreateRoute(engine, evsElement))
+            {
+                ShowErrorDialog(engine);
+            }
+        }
+
+        private bool VerifyCreateRoute(Engine engine, IDmsElement evsElement)
         {
             int retries = 0;
             bool allEntriesFound = false;
-            while (!allEntriesFound && retries < 100)
+            while (!allEntriesFound && retries < 50)
             {
                 engine.Sleep(50);
 
@@ -158,11 +168,33 @@ namespace CreateRoute_1
                     new ColumnFilter { Pid = 12109, Value = destination, ComparisonOperator = ComparisonOperator.Equal },
                 }).ToList();
 
-                var filteredRowsBasedOnLevelSelection = existingDestinationRows.Where(row => selectedLevels.Contains(Convert.ToString(row[10]))).ToList();
+                if (!existingDestinationRows.Any()) continue;
+
+                var filteredRowsBasedOnLevelSelection = existingDestinationRows.Where(row => levels.Contains(Convert.ToString(row[10]))).ToList();
                 allEntriesFound = filteredRowsBasedOnLevelSelection.All(row => Convert.ToString(row[4]) == source);
+
+                if (allEntriesFound)
+                {
+                    return true;
+                }
 
                 retries++;
             }
+
+            return false;
+        }
+
+        private void ShowErrorDialog(Engine engine)
+        {
+            //engine.ShowUI();
+
+            interactiveController = new InteractiveController(engine);
+
+            var errorDialog = new ErrorDialog(engine, "Take Failed", $"Could not establish route(s) for Source: {source} and Destination: {destination}.");
+            errorDialog.OkButton.Pressed += (sender, args) => engine.ExitSuccess(String.Empty);
+
+            if (interactiveController.IsRunning) interactiveController.ShowDialog(errorDialog);
+            else interactiveController.Run(errorDialog);
         }
     }
 }

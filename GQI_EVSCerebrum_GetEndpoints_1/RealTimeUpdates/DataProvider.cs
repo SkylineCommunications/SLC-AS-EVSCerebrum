@@ -36,6 +36,8 @@
 
         public ElementTableCache DestinationCategoriesTable { get; private set; }
 
+        public ElementTableCache RoutesTable { get; private set; }
+
         private void InstantiateCache()
         {
             if (_connection == null)
@@ -48,6 +50,8 @@
 
             DestinationsTable = new ElementTableCache(_connection, _gqiDms, _dataminerId, _elementId, 15100, "2");
             DestinationCategoriesTable = new ElementTableCache(_connection, _gqiDms, _dataminerId, _elementId, 17400, "4");
+
+            RoutesTable = new ElementTableCache(_connection, _gqiDms, _dataminerId, _elementId, 12100, "5");
         }
 
         public void Dispose()
@@ -56,6 +60,7 @@
             SourceCategoriesTable?.Dispose();
             DestinationsTable?.Dispose();
             DestinationCategoriesTable?.Dispose();
+            RoutesTable?.Dispose();
         }
     }
 }
