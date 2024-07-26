@@ -1,1 +1,1 @@
-﻿{"__type":"Skyline.DataMiner.Web.Common.v1.DMAApplicationVersionInfo","PublicVersion":224,"DraftVersion":0,"Sections":["Tech Partner"],"Security":{"__type":"Skyline.DataMiner.Web.Common.v1.Dashboards.DMAApplicationSecurityConfig","AllowView":[],"AllowEdit":[]}}
+﻿{"__type":"Skyline.DataMiner.Web.Common.v1.DMAApplicationVersionInfo","PublicVersion":230,"DraftVersion":0,"Sections":["Tech Partner"],"Security":{"__type":"Skyline.DataMiner.Web.Common.v1.Dashboards.DMAApplicationSecurityConfig","AllowView":[],"AllowEdit":[]}}
