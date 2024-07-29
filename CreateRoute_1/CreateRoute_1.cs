@@ -18,7 +18,7 @@ Any modifications to this script by the user are only allowed for
 personal use and within the intended purpose of the script,
 and will remain the sole responsibility of the user.
 Skyline Communications will not be responsible for any damages or
-malfunctions whatsoever of the script resulting from a modification
+malfunctions whatsoever of the script resulting from a modification 
 or adaptation by the user.
 
 The content of this script is confidential information.
