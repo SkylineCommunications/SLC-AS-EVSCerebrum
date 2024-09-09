@@ -57,7 +57,7 @@
 
         public ParameterValue[] GetData()
         {
-            return _cachedTable.ArrayValue;
+            return _cachedTable?.ArrayValue ?? new ParameterValue[0];
         }
 
         public void Dispose()
