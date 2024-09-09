@@ -36,7 +36,6 @@
             {
                 var routesColumnData = _dataProvider.RoutesTable.GetData();
                 var routes = Route.CreateRoutes(routesColumnData);
-
                 UpdateDestinations(endPoints, routes);
             }
 

@@ -96,18 +96,25 @@ namespace GQI_EVSCerebrum_GetEndpoints_1
 
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
-            var newRows = CalculateNewRows().ToArray();
-
             try
             {
-                return new GQIPage(newRows)
+                var newRows = CalculateNewRows().ToArray();
+
+                try
                 {
-                    HasNextPage = false,
-                };
+                    return new GQIPage(newRows)
+                    {
+                        HasNextPage = false,
+                    };
+                }
+                finally
+                {
+                    _currentRows = newRows;
+                }
             }
-            finally
+            catch (Exception e)
             {
-                _currentRows = newRows;
+                throw new Exception(e.ToString());
             }
         }
 
