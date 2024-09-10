@@ -36,7 +36,6 @@
             {
                 var routesColumnData = _dataProvider.RoutesTable.GetData();
                 var routes = Route.CreateRoutes(routesColumnData);
-
                 UpdateDestinations(endPoints, routes);
             }
 
@@ -58,10 +57,15 @@
         {
             foreach (var destination in destinations)
             {
-                if (!routes.Any(r => r.Destination == destination.Mnemonic)) continue;
+                var firstConnectedSource = routes.Where(r => r.Destination == destination.Mnemonic && !String.IsNullOrWhiteSpace(r.Source))
+                    .OrderByDescending(r => r.DestinationLevel)
+                    .Select(r => r.Source)
+                    .FirstOrDefault();
 
-                var firstConnectedSource = routes.Where(r => r.Destination == destination.Mnemonic).OrderByDescending(r => r.DestinationLevel).Select(r => r.Source).FirstOrDefault();
-                destination.ConnectedSource = firstConnectedSource;
+                if (firstConnectedSource != null)
+                {
+                    destination.ConnectedSource = firstConnectedSource;
+                }
             }
         }
 
