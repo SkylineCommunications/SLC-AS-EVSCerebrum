@@ -149,10 +149,11 @@ namespace CreateRoute_1
                 evsClient.CreateRouteAsync(route);
             }
 
-            if (!VerifyCreateRoute(engine, evsElement))
-            {
-                ShowErrorDialog(engine);
-            }
+            // Commented out as level amount isn't always matching between source & destination, Task id: "255289" to improve this
+            //if (!VerifyCreateRoute(engine, evsElement))
+            //{
+            //    ShowErrorDialog(engine);
+            //}
         }
 
         private bool VerifyCreateRoute(Engine engine, IDmsElement evsElement)
