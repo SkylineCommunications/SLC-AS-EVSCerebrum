@@ -41,13 +41,13 @@ title: 'EVS Cerebrum'
 # General information about the Catalog item.
 #   Max length: 100,000 characters
 # Currently not shown in the Catalog UI but will be supported in the near future.
-short_description: 'Low code app that enables you to select the router level, source, and destination to establish a route connection.'
+short_description:
 
 # [Optional]
 # A valid URL that points to the source code.
 #   A valid URL
 #   Max length: 2048 characters
-source_code_url: 'https://github.com/SkylineCommunications/SLC-AS-EVSCerebrum'
+source_code_url:
 
 # [Optional]
 # A valid URL that points to documentation.
@@ -73,6 +73,3 @@ owners:
 #   Cannot contain newlines.
 #   Cannot contain leading or trailing whitespace characters.
 tags:
-  - 'Automation'
-  - 'Visualization'
-  - 'EVS Cerebrum'
