@@ -8,7 +8,7 @@ Unlock the full potential of your operations with the powerful integration of EV
 
 ## Key Features
 
-- **Overview**: Visualization of all existing mnemonics, levels and categories.
+- **Overview**: Visualization of all existing mnemonics, levels, and categories.
 - **Router Control Panel**: With just a few clicks, a route connection can be established through a user-friendly interface.
 
 ## Using the application
