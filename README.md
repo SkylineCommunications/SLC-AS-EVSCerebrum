@@ -13,7 +13,7 @@ Unlock the full potential of your operations with the powerful integration of EV
 
 ## Using the application
 
-The primary use of the application is to setup a route connection.
+The primary use of the application is to set up a route connection.
 
 - To do this:
 
