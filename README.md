@@ -40,7 +40,7 @@ To deploy this item from the Catalog, you will need:
 
 ## Installation and configuration
 
-### Step 1: Deploy the EVS Cerebrum Application
+### Step 1: Deploy the EVS Cerebrum application
 
 1. Click the *Deploy* button.
 
