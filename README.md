@@ -48,7 +48,7 @@ To deploy this item from the Catalog, you will need:
 
 1. Optionally verify that the deployment was successful in [the Admin app](https://admin.dataminer.services/), where you can check the status of the deployment.
 
-### Step 2: Access the EVS Cerebrum Application
+### Step 2: Access the EVS Cerebrum application
 
 1. Go to `http(s)://[DMA name]/root`.
 
