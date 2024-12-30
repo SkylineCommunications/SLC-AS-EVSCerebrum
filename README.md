@@ -2,7 +2,7 @@
 
 ## Overview
 
-Unlock the full potential of your operations with the powerful integration of EVS Cerebrum and DataMiner. DataMiner establishes connectivity, setting crosspoints between pre-reserved resources, ideal for streamlining tasks like pre-configuring feeds for fiber contribution jobs in the MCR. Crosspoint commands are sent to Cerebrum for this purpose. Designed to simplify your workflow, the EVS Cerebrum application offers an **user-friendly** and **intuitive** interface that makes setting crosspoints quicker and more efficient than ever before.
+Unlock the full potential of your operations with the powerful integration of EVS Cerebrum and DataMiner. DataMiner establishes connectivity, setting crosspoints between pre-reserved resources, ideal for streamlining tasks like pre-configuring feeds for fiber contribution jobs in the MCR. Crosspoint commands are sent to Cerebrum for this purpose. Designed to simplify your workflow, the EVS Cerebrum application offers a **user-friendly** and **intuitive** interface that makes setting crosspoints quicker and more efficient than ever before.
 
 ![Overview](./Documentation/Images/Overview_EVS_Cerebrum.png)
 
