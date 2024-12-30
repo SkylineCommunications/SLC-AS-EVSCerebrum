@@ -23,7 +23,7 @@ The primary use of the application is to set up a route connection.
 
      Once the route is established, the connected source will be visible on the designated destination and level(s).
 
-- To set up routes for all levels simultaneously, click the *All level Take* button.
+- To set up routes for all levels simultaneously, click the *All Level Take* button.
 
 ![Example Usage](./Documentation/Images/Connect.gif)
 
