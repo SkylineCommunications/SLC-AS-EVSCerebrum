@@ -36,7 +36,7 @@ To deploy this item from the Catalog, you will need:
 
 - DataMiner version 10.4.4 or higher.
 
-- A Dataminer System [connected to dataminer.services](https://docs.dataminer.services/user-guide/Cloud_Platform/Connecting_to_cloud/Connecting_your_DataMiner_System_to_the_cloud.html)
+- A DataMiner System [connected to dataminer.services](https://docs.dataminer.services/user-guide/Cloud_Platform/Connecting_to_cloud/Connecting_your_DataMiner_System_to_the_cloud.html).
 
 ## Installation and configuration
 
